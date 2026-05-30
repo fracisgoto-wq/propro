@@ -9,312 +9,655 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0f0e0c">
 <title>Mis Proyectos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
 <style>
-  :root { color-scheme: light; }
+  :root {
+    color-scheme: dark;
+
+    /* Neutrals — warm-leaning near-black ramp (OKLCH). No pure black. */
+    --bg:            oklch(0.158 0.004 70);
+    --bg-elev:       oklch(0.190 0.005 70);
+    --surface:       oklch(0.212 0.006 70);
+    --surface-2:     oklch(0.255 0.007 70);
+    --border:        oklch(0.300 0.008 70);
+    --border-strong: oklch(0.400 0.010 70);
+
+    --ink:    oklch(0.970 0.004 80);
+    --ink-2:  oklch(0.805 0.007 80);
+    --muted:  oklch(0.660 0.009 80);
+    --faint:  oklch(0.560 0.009 80);
+
+    /* ONE brand accent — amber/gold. Used for focus, active filter, primary highlight. */
+    --accent:       oklch(0.820 0.150 78);
+    --accent-ink:   oklch(0.870 0.140 82);
+    --accent-deep:  oklch(0.730 0.150 70);
+    --accent-soft:  oklch(0.820 0.150 78 / 0.15);
+    --accent-line:  oklch(0.820 0.150 78 / 0.40);
+
+    /* Primary action — inverted (near-white) */
+    --primary:      oklch(0.975 0.003 80);
+    --primary-ink:  oklch(0.165 0.005 70);
+
+    /* Status — semantic, each hue distinct from the amber accent */
+    --st-activo:     oklch(0.800 0.145 155);  /* emerald */
+    --st-pausado:    oklch(0.770 0.110 35);   /* coral   */
+    --st-completado: oklch(0.750 0.120 245);  /* blue    */
+    --st-idea:       oklch(0.730 0.012 80);   /* neutral */
+
+    /* Priority */
+    --prio-alta:  oklch(0.660 0.200 25);
+    --prio-media: oklch(0.800 0.140 75);
+    --prio-baja:  oklch(0.760 0.140 152);
+
+    --danger:      oklch(0.700 0.180 24);
+    --danger-soft: oklch(0.700 0.180 24 / 0.14);
+
+    /* Motion — Emil Kowalski curves */
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    --ease-io:  cubic-bezier(0.77, 0, 0.175, 1);
+
+    --font-sans: 'Outfit', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+
+    --shadow-card: 0 1px 2px oklch(0 0 0 / 0.45), 0 1px 0 oklch(1 0 0 / 0.03) inset;
+    --shadow-pop:  0 18px 44px -14px oklch(0 0 0 / 0.66), 0 2px 8px oklch(0 0 0 / 0.42);
+
+    --z-header: 50; --z-fab: 60;
+    --maxw: 1120px;
+
+    /* Shape scale (locked): pill for chips/FAB, 10px controls, 14px cards, 18px modal */
+    --r-control: 10px; --r-card: 14px; --r-modal: 18px;
+  }
+
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; color: #1a1a1a; min-height: 100vh; }
+  html { -webkit-text-size-adjust: 100%; }
 
-  .header { background: #fff; border-bottom: 1px solid #e5e7eb; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; }
-  .header h1 { font-size: 18px; font-weight: 700; color: #111; }
-  .header-actions { display: flex; gap: 8px; align-items: center; }
-  .btn { padding: 7px 14px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; transition: all .15s; }
-  .btn-primary { background: #2563eb; color: #fff; }
-  .btn-primary:hover { background: #1d4ed8; }
-  .btn-ghost { background: transparent; color: #6b7280; border: 1px solid #d1d5db; }
-  .btn-ghost:hover { background: #f9fafb; }
-  .btn-danger { background: #fee2e2; color: #dc2626; border: none; }
-  .btn-danger:hover { background: #fecaca; }
+  body {
+    font-family: var(--font-sans);
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100dvh;
+    font-size: 15px; line-height: 1.5; letter-spacing: -0.011em;
+    font-feature-settings: 'ss01' 1, 'cv01' 1;
+    -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+  }
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 16px; }
+  ::selection { background: var(--accent-soft); color: var(--ink); }
 
-  .filters { padding: 12px 20px; background: #fff; border-bottom: 1px solid #e5e7eb; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-  .filter-btn { padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; cursor: pointer; border: 1.5px solid transparent; transition: all .15s; background: #f3f4f6; color: #6b7280; }
-  .filter-btn.active { border-color: #2563eb; background: #eff6ff; color: #2563eb; }
-  .search-input { margin-left: auto; padding: 6px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 13px; width: 200px; outline: none; }
-  .search-input:focus { border-color: #2563eb; }
+  /* ---------- Header ---------- */
+  .header {
+    position: sticky; top: 0; z-index: var(--z-header);
+    background: oklch(0.158 0.004 70 / 0.74);
+    backdrop-filter: saturate(150%) blur(14px);
+    -webkit-backdrop-filter: saturate(150%) blur(14px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-inner {
+    max-width: var(--maxw); margin: 0 auto; padding: 12px 16px;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  }
+  .brand { display: flex; align-items: center; gap: 11px; min-width: 0; }
+  .brand-mark {
+    width: 32px; height: 32px; flex: none; border-radius: 9px;
+    display: grid; place-items: center; font-size: 18px;
+    background: linear-gradient(150deg, var(--accent), var(--accent-deep));
+    color: oklch(0.20 0.03 70);
+    box-shadow: 0 0 0 1px oklch(1 0 0 / 0.10) inset, 0 5px 16px -6px var(--accent-deep);
+  }
+  .brand h1 { font-size: 16px; font-weight: 600; letter-spacing: -0.025em; color: var(--ink); white-space: nowrap; line-height: 1.1; }
+  .brand .sub { font-size: 12px; color: var(--faint); font-family: var(--font-mono); font-variant-numeric: tabular-nums; margin-top: 1px; }
 
-  .stats { padding: 12px 20px; display: flex; gap: 12px; flex-wrap: wrap; }
-  .stat { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 10px 16px; min-width: 100px; }
-  .stat-value { font-size: 22px; font-weight: 700; }
-  .stat-label { font-size: 11px; color: #6b7280; margin-top: 2px; text-transform: uppercase; letter-spacing: .04em; }
+  /* ---------- Buttons ---------- */
+  .btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 9px 15px; border-radius: var(--r-control);
+    font-family: inherit; font-size: 13.5px; font-weight: 550; letter-spacing: -0.01em;
+    cursor: pointer; border: 1px solid transparent; white-space: nowrap; user-select: none;
+    transition: transform .14s var(--ease-out), background-color .16s ease, border-color .16s ease, color .16s ease, box-shadow .16s ease;
+  }
+  .btn i { font-size: 16px; }
+  .btn:active { transform: scale(0.97); }
+  .btn:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--accent-soft); }
+  .btn-primary { background: var(--primary); color: var(--primary-ink); font-weight: 600; }
+  .btn-ghost { background: var(--surface); color: var(--ink-2); border-color: var(--border); }
+  .btn-danger { background: transparent; color: var(--danger); border-color: transparent; }
+  @media (hover: hover) and (pointer: fine) {
+    .btn-primary:hover { background: oklch(0.90 0.003 80); }
+    .btn-ghost:hover { background: var(--surface-2); border-color: var(--border-strong); color: var(--ink); }
+    .btn-danger:hover { background: var(--danger-soft); }
+  }
+  .header-new { display: none; }
 
-  .projects { padding: 16px 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
-  .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 10px; transition: box-shadow .15s; }
-  .card:hover { box-shadow: 0 4px 12px rgba(0,0,0,.08); }
-  .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
-  .card-title { font-size: 15px; font-weight: 600; color: #111; line-height: 1.3; flex: 1; }
-  .card-actions { display: flex; gap: 4px; opacity: 0; transition: opacity .15s; }
-  .card:hover .card-actions { opacity: 1; }
-  .icon-btn { background: none; border: none; cursor: pointer; padding: 4px; border-radius: 6px; font-size: 14px; color: #6b7280; }
-  .icon-btn:hover { background: #f3f4f6; }
+  /* ---------- Toolbar ---------- */
+  .toolbar { padding-top: 18px; }
+  .chips {
+    display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px;
+    scrollbar-width: none; -webkit-overflow-scrolling: touch;
+  }
+  .chips::-webkit-scrollbar { display: none; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 7px; flex: none;
+    padding: 7px 13px; border-radius: 999px;
+    font-family: inherit; font-size: 13px; font-weight: 500; letter-spacing: -0.01em;
+    cursor: pointer; background: var(--surface); color: var(--muted); border: 1px solid var(--border);
+    transition: transform .14s var(--ease-out), background-color .16s ease, color .16s ease, border-color .16s ease;
+  }
+  .chip:active { transform: scale(0.96); }
+  .chip:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--accent-soft); }
+  .chip-count {
+    font-family: var(--font-mono); font-size: 11px; font-weight: 500; color: var(--faint);
+    font-variant-numeric: tabular-nums; padding: 1px 6px; border-radius: 999px;
+    background: oklch(1 0 0 / 0.05); min-width: 21px; text-align: center;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .chip:hover { color: var(--ink-2); border-color: var(--border-strong); background: var(--surface-2); }
+  }
+  .chip.is-active { background: var(--accent-soft); color: var(--accent-ink); border-color: var(--accent-line); }
+  .chip.is-active .chip-count { color: var(--accent-ink); background: oklch(0.82 0.15 78 / 0.18); }
 
-  .badge { display: inline-block; padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
-  .badge-activo    { background: #dcfce7; color: #16a34a; }
-  .badge-pausado   { background: #fef9c3; color: #ca8a04; }
-  .badge-completado{ background: #eff6ff; color: #2563eb; }
-  .badge-idea      { background: #f3f4f6; color: #6b7280; }
+  .search { position: relative; margin-top: 8px; }
+  .search > i {
+    position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
+    font-size: 17px; color: var(--faint); pointer-events: none;
+  }
+  .search input {
+    width: 100%; padding: 11px 14px 11px 40px;
+    background: var(--bg-elev); border: 1px solid var(--border); border-radius: var(--r-control);
+    color: var(--ink); font-family: inherit; font-size: 16px; letter-spacing: -0.01em;
+    outline: none; transition: border-color .16s ease, box-shadow .16s ease, background-color .16s ease;
+  }
+  .search input::placeholder { color: var(--muted); }
+  .search input:focus { border-color: var(--accent-line); box-shadow: 0 0 0 3px var(--accent-soft); background: var(--surface); }
 
-  .priority { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: #6b7280; }
-  .dot { width: 8px; height: 8px; border-radius: 50%; }
-  .dot-alta   { background: #ef4444; }
-  .dot-media  { background: #f59e0b; }
-  .dot-baja   { background: #22c55e; }
+  /* ---------- Projects ---------- */
+  .projects { padding: 18px 0 100px; display: grid; grid-template-columns: 1fr; gap: 12px; }
+  @media (min-width: 560px) { .projects { grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 14px; } }
+  @media (min-width: 640px) { .projects { padding-bottom: 48px; } }
 
-  .card-desc { font-size: 13px; color: #4b5563; line-height: 1.5; }
-  .card-next { font-size: 12px; color: #2563eb; background: #eff6ff; padding: 6px 10px; border-radius: 7px; }
-  .card-next::before { content: '→ '; font-weight: 600; }
-  .card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 2px; }
-  .card-tags { display: flex; gap: 4px; flex-wrap: wrap; }
-  .tag { background: #f3f4f6; color: #374151; font-size: 11px; padding: 2px 7px; border-radius: 5px; }
-  .card-link { font-size: 12px; color: #2563eb; text-decoration: none; }
-  .card-link:hover { text-decoration: underline; }
-  .card-date { font-size: 11px; color: #9ca3af; }
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-card);
+    padding: 16px; display: flex; flex-direction: column; gap: 11px;
+    box-shadow: var(--shadow-card);
+    transition: border-color .18s ease, box-shadow .18s var(--ease-out);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .card { transition: transform .2s ease, border-color .18s ease, box-shadow .2s var(--ease-out); }
+    .card:hover { transform: translateY(-2px); border-color: var(--border-strong); box-shadow: var(--shadow-pop); }
+  }
+  /* New-project feedback: brief accent flash (color only, reduced-motion safe) */
+  @keyframes cardFlash {
+    from { border-color: var(--accent); background: color-mix(in oklab, var(--surface), var(--accent) 13%); }
+    to   { border-color: var(--border); background: var(--surface); }
+  }
+  .card.flash { animation: cardFlash .85s var(--ease-out); }
 
-  /* Modal */
-  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 100; align-items: center; justify-content: center; }
-  .modal-overlay.open { display: flex; }
-  .modal { background: #fff; border-radius: 14px; padding: 24px; width: 480px; max-width: 95vw; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; }
-  .modal h2 { font-size: 16px; font-weight: 700; }
-  .form-group { display: flex; flex-direction: column; gap: 5px; }
-  label { font-size: 13px; font-weight: 500; color: #374151; }
-  input, textarea, select { padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 13px; font-family: inherit; outline: none; }
-  input:focus, textarea:focus, select:focus { border-color: #2563eb; }
-  textarea { resize: vertical; min-height: 70px; }
-  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px; }
+  .card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+  .card-title { font-size: 15px; font-weight: 600; line-height: 1.35; letter-spacing: -0.015em; color: var(--ink); text-wrap: balance; }
+  .card-tools { display: flex; gap: 2px; flex: none; margin: -4px -4px 0 0; }
+  .icon-btn {
+    width: 34px; height: 34px; display: grid; place-items: center;
+    background: transparent; border: none; border-radius: 8px; cursor: pointer;
+    color: var(--muted); font-size: 17px;
+    transition: background-color .14s ease, color .14s ease, transform .12s var(--ease-out);
+  }
+  .icon-btn:active { transform: scale(0.9); }
+  .icon-btn:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--accent-soft); color: var(--ink); }
+  @media (hover: hover) and (pointer: fine) {
+    .icon-btn:hover { background: var(--surface-2); color: var(--ink); }
+    .icon-btn--danger:hover { background: var(--danger-soft); color: var(--danger); }
+    .card-tools { opacity: 0; transition: opacity .16s ease; }
+    .card:hover .card-tools, .card:focus-within .card-tools { opacity: 1; }
+  }
 
-  .empty { text-align: center; padding: 60px 20px; color: #6b7280; }
-  .empty-icon { font-size: 40px; margin-bottom: 12px; }
+  .card-meta { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px; border-radius: 7px;
+    font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.045em;
+  }
+  .badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .badge--activo     { color: var(--st-activo);     background: oklch(0.80 0.145 155 / 0.14); }
+  .badge--pausado    { color: var(--st-pausado);    background: oklch(0.77 0.11 35 / 0.15); }
+  .badge--completado { color: var(--st-completado); background: oklch(0.75 0.12 245 / 0.16); }
+  .badge--idea       { color: var(--st-idea);       background: oklch(0.73 0.012 80 / 0.14); }
+
+  .prio { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); text-transform: capitalize; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+  .dot--alta  { background: var(--prio-alta);  box-shadow: 0 0 0 3px oklch(0.66 0.20 25 / 0.16); }
+  .dot--media { background: var(--prio-media); box-shadow: 0 0 0 3px oklch(0.80 0.14 75 / 0.16); }
+  .dot--baja  { background: var(--prio-baja);  box-shadow: 0 0 0 3px oklch(0.76 0.14 152 / 0.16); }
+
+  .card-desc { font-size: 13.5px; color: var(--ink-2); line-height: 1.55; }
+
+  .card-next {
+    display: flex; gap: 9px; align-items: baseline;
+    font-size: 12.5px; color: var(--accent-ink); line-height: 1.45;
+    background: var(--accent-soft); border: 1px solid var(--accent-line);
+    padding: 8px 11px; border-radius: 9px;
+  }
+  .card-next .lbl { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.8; flex: none; }
+
+  .card-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: auto; }
+  .tags { display: flex; gap: 5px; flex-wrap: wrap; min-width: 0; }
+  .tag {
+    font-family: var(--font-mono); font-size: 11px; color: var(--muted);
+    padding: 2px 7px; border-radius: 6px; background: oklch(1 0 0 / 0.045); border: 1px solid var(--border);
+  }
+  .card-link {
+    display: inline-flex; align-items: center; gap: 5px; flex: none;
+    font-size: 12px; font-weight: 550; color: var(--accent-ink); text-decoration: none;
+    transition: color .14s ease;
+  }
+  .card-link i { font-size: 13px; }
+  @media (hover: hover) and (pointer: fine) { .card-link:hover { color: var(--accent); } }
+  .card-date { font-size: 11px; color: var(--faint); font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+  /* ---------- Empty state ---------- */
+  .empty { grid-column: 1 / -1; text-align: center; padding: 56px 20px; }
+  .empty-icon {
+    width: 54px; height: 54px; margin: 0 auto 16px; border-radius: var(--r-card);
+    display: grid; place-items: center; color: var(--accent); font-size: 26px;
+    background: var(--accent-soft); border: 1px solid var(--accent-line);
+  }
+  .empty h2 { font-size: 16px; font-weight: 600; color: var(--ink); letter-spacing: -0.02em; }
+  .empty p { font-size: 13.5px; color: var(--muted); margin: 7px auto 18px; max-width: 40ch; line-height: 1.55; }
+  .empty .btn { margin: 0 auto; }
+
+  /* ---------- FAB ---------- */
+  .fab {
+    position: fixed; right: 16px; z-index: var(--z-fab);
+    bottom: calc(18px + env(safe-area-inset-bottom));
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 13px 18px; border: none; border-radius: 999px; cursor: pointer;
+    font-family: inherit; font-size: 14px; font-weight: 600; letter-spacing: -0.01em;
+    background: var(--primary); color: var(--primary-ink);
+    box-shadow: 0 10px 26px -6px oklch(0 0 0 / 0.62), 0 0 0 1px oklch(1 0 0 / 0.08) inset;
+  }
+  .fab i { font-size: 18px; }
+  .fab:active { transform: scale(0.95); }
+  .fab:focus-visible { outline: none; box-shadow: 0 0 0 4px var(--accent-soft), 0 10px 26px -6px oklch(0 0 0 / 0.62); }
+  @media (min-width: 640px) { .fab { display: none; } .header-new { display: inline-flex; } }
+
+  /* ---------- Modal ---------- */
+  dialog#modal {
+    margin: auto; width: 480px; max-width: calc(100vw - 28px); max-height: 88dvh;
+    padding: 0; border: 1px solid var(--border); border-radius: var(--r-modal);
+    background: var(--bg-elev); color: var(--ink); box-shadow: var(--shadow-pop); overflow: visible;
+  }
+  dialog#modal::backdrop { background: oklch(0.06 0.004 70 / 0.62); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
+  /* Closed/exit state — faster (Emil: exit faster than enter) */
+  dialog#modal {
+    opacity: 0; transform: translateY(8px) scale(0.96);
+    transition: opacity .15s var(--ease-out), transform .15s var(--ease-out), overlay .15s allow-discrete, display .15s allow-discrete;
+  }
+  dialog#modal::backdrop { opacity: 0; transition: opacity .15s var(--ease-out), overlay .15s allow-discrete, display .15s allow-discrete; }
+  /* Open/enter state — slower, ease-out */
+  dialog#modal[open] {
+    opacity: 1; transform: translateY(0) scale(1);
+    transition: opacity .28s var(--ease-out), transform .28s var(--ease-out), overlay .28s allow-discrete, display .28s allow-discrete;
+  }
+  dialog#modal[open]::backdrop { opacity: 1; transition: opacity .28s var(--ease-out), overlay .28s allow-discrete, display .28s allow-discrete; }
+  @starting-style { dialog#modal[open] { opacity: 0; transform: translateY(8px) scale(0.96); } }
+  @starting-style { dialog#modal[open]::backdrop { opacity: 0; } }
+
+  .modal-card { display: flex; flex-direction: column; max-height: 88dvh; }
+  .modal-head { padding: 20px 22px 4px; }
+  .modal-head h2 { font-size: 17px; font-weight: 600; letter-spacing: -0.02em; }
+  .modal-head p { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
+  .modal-body { padding: 16px 22px 6px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; }
+
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label { font-size: 12.5px; font-weight: 550; color: var(--ink-2); display: flex; gap: 6px; align-items: baseline; }
+  .field .opt { color: var(--faint); font-weight: 400; font-size: 11.5px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  input, textarea, select {
+    width: 100%; padding: 10px 12px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-control);
+    color: var(--ink); font-family: inherit; font-size: 16px; letter-spacing: -0.01em;
+    outline: none; transition: border-color .16s ease, box-shadow .16s ease, background-color .16s ease;
+  }
+  textarea { resize: vertical; min-height: 76px; line-height: 1.5; }
+  input::placeholder, textarea::placeholder { color: var(--muted); }
+  input:focus, textarea:focus, select:focus { border-color: var(--accent-line); box-shadow: 0 0 0 3px var(--accent-soft); background: var(--surface-2); }
+  input.invalid { border-color: var(--danger); box-shadow: 0 0 0 3px var(--danger-soft); }
+  select {
+    appearance: none; -webkit-appearance: none; cursor: pointer; padding-right: 36px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 256 256' fill='%239aa0ab'%3E%3Cpath d='M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 12px center;
+  }
+  .err { font-size: 12px; color: var(--danger); display: none; }
+  .err.show { display: block; }
+  .modal-foot { display: flex; justify-content: flex-end; gap: 9px; padding: 14px 22px 20px; margin-top: 4px; border-top: 1px solid var(--border); }
+
+  /* ---------- Reduced motion ---------- */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+  }
 </style>
 </head>
 <body>
 
-<div class="header">
-  <h1>🚀 Mis Proyectos</h1>
-  <div class="header-actions">
-    <button class="btn btn-primary" onclick="openModal()">+ Nuevo proyecto</button>
-  </div>
-</div>
-
-<div class="filters">
-  <button class="filter-btn active" onclick="setFilter('todos', this)">Todos</button>
-  <button class="filter-btn" onclick="setFilter('activo', this)">Activo</button>
-  <button class="filter-btn" onclick="setFilter('pausado', this)">Pausado</button>
-  <button class="filter-btn" onclick="setFilter('completado', this)">Completado</button>
-  <button class="filter-btn" onclick="setFilter('idea', this)">Idea</button>
-  <input class="search-input" type="text" placeholder="🔍 Buscar proyecto..." oninput="setSearch(this.value)">
-</div>
-
-<div class="stats" id="stats"></div>
-<div class="projects" id="projects"></div>
-
-<!-- Modal -->
-<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
-  <div class="modal">
-    <h2 id="modalTitle">Nuevo proyecto</h2>
-    <div class="form-group">
-      <label>Nombre del proyecto *</label>
-      <input id="f-name" type="text" placeholder="Mi proyecto increíble">
-    </div>
-    <div class="form-group">
-      <label>Descripción</label>
-      <textarea id="f-desc" placeholder="¿De qué trata este proyecto?"></textarea>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label>Estado</label>
-        <select id="f-status">
-          <option value="activo">Activo</option>
-          <option value="pausado">Pausado</option>
-          <option value="idea">Idea</option>
-          <option value="completado">Completado</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>Prioridad</label>
-        <select id="f-priority">
-          <option value="alta">Alta</option>
-          <option value="media">Media</option>
-          <option value="baja">Baja</option>
-        </select>
+<header class="header">
+  <div class="header-inner">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"><i class="ph ph-stack"></i></span>
+      <div>
+        <h1>Mis Proyectos</h1>
+        <div class="sub" id="brand-sub">cargando</div>
       </div>
     </div>
-    <div class="form-group">
-      <label>Próximo paso</label>
-      <input id="f-next" type="text" placeholder="Lo que necesitas hacer ahora">
-    </div>
-    <div class="form-group">
-      <label>Tags (separados por coma)</label>
-      <input id="f-tags" type="text" placeholder="React, API, mobile">
-    </div>
-    <div class="form-group">
-      <label>Enlace (repo, docs, etc.)</label>
-      <input id="f-link" type="url" placeholder="https://github.com/...">
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
-      <button class="btn btn-primary" onclick="saveProject()">Guardar</button>
+    <button class="btn btn-primary header-new" data-action="new"><i class="ph ph-plus"></i> Nuevo proyecto</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="toolbar">
+    <div class="chips" id="chips" role="tablist" aria-label="Filtrar por estado"></div>
+    <div class="search">
+      <i class="ph ph-magnifying-glass"></i>
+      <input type="text" id="search" placeholder="Buscar por nombre, descripción o tag" aria-label="Buscar proyecto">
     </div>
   </div>
-</div>
+  <div class="projects" id="projects"></div>
+</main>
 
-<script>
+<button class="fab" data-action="new" aria-label="Nuevo proyecto"><i class="ph ph-plus"></i> Nuevo</button>
+
+<dialog id="modal" aria-labelledby="modalTitle">
+  <form class="modal-card" id="projForm">
+    <div class="modal-head">
+      <h2 id="modalTitle">Nuevo proyecto</h2>
+      <p id="modalSub">Registra en qué estás trabajando y qué sigue.</p>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label for="f-name">Nombre del proyecto</label>
+        <input id="f-name" type="text" placeholder="Mi proyecto increíble" autocomplete="off">
+        <span class="err" id="nameErr">Escribe un nombre para el proyecto.</span>
+      </div>
+      <div class="field">
+        <label for="f-desc">Descripción <span class="opt">opcional</span></label>
+        <textarea id="f-desc" placeholder="¿De qué trata este proyecto?"></textarea>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label for="f-status">Estado</label>
+          <select id="f-status">
+            <option value="activo">Activo</option>
+            <option value="pausado">Pausado</option>
+            <option value="idea">Idea</option>
+            <option value="completado">Completado</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="f-priority">Prioridad</label>
+          <select id="f-priority">
+            <option value="alta">Alta</option>
+            <option value="media">Media</option>
+            <option value="baja">Baja</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label for="f-next">Próximo paso <span class="opt">opcional</span></label>
+        <input id="f-next" type="text" placeholder="Lo que necesitas hacer ahora">
+      </div>
+      <div class="field">
+        <label for="f-tags">Tags <span class="opt">separa con comas</span></label>
+        <input id="f-tags" type="text" placeholder="React, API, mobile">
+      </div>
+      <div class="field">
+        <label for="f-link">Enlace <span class="opt">repo, docs, etc.</span></label>
+        <input id="f-link" type="url" placeholder="https://github.com/...">
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button type="button" class="btn btn-ghost" id="cancelBtn">Cancelar</button>
+      <button type="submit" class="btn btn-primary" id="saveBtn">Guardar proyecto</button>
+    </div>
+  </form>
+</dialog>
+
+<script type="module">
 const STORAGE_KEY = 'dev_projects_v1';
 
 const SAMPLE_PROJECTS = [
-  {
-    id: 1, name: 'API REST con Node.js', status: 'activo', priority: 'alta',
+  { id: 1, name: 'API REST con Node.js', status: 'activo', priority: 'alta',
     desc: 'Backend para la app móvil. Endpoints de autenticación y manejo de usuarios.',
-    next: 'Implementar JWT refresh tokens', tags: ['Node.js', 'Express', 'MongoDB'],
-    link: '', created: '2026-05-10'
-  },
-  {
-    id: 2, name: 'Portfolio personal', status: 'pausado', priority: 'media',
+    next: 'Implementar JWT refresh tokens', tags: ['Node.js', 'Express', 'MongoDB'], link: '', created: '2026-05-10' },
+  { id: 2, name: 'Portfolio personal', status: 'pausado', priority: 'media',
     desc: 'Sitio web con mis proyectos y experiencia. Diseño minimalista.',
-    next: 'Terminar sección de proyectos', tags: ['React', 'Tailwind'],
-    link: '', created: '2026-04-20'
-  },
-  {
-    id: 3, name: 'Bot de Telegram para alertas', status: 'idea', priority: 'baja',
+    next: 'Terminar sección de proyectos', tags: ['React', 'Tailwind'], link: '', created: '2026-04-20' },
+  { id: 3, name: 'Bot de Telegram para alertas', status: 'idea', priority: 'baja',
     desc: 'Bot que notifique cuando hay cambios en mis repositorios de GitHub.',
-    next: 'Investigar API de Telegram', tags: ['Python', 'Bot', 'GitHub'],
-    link: '', created: '2026-05-15'
-  },
-  {
-    id: 4, name: 'CLI para snippets', status: 'completado', priority: 'media',
+    next: 'Investigar API de Telegram', tags: ['Python', 'Bot', 'GitHub'], link: '', created: '2026-05-15' },
+  { id: 4, name: 'CLI para snippets', status: 'completado', priority: 'media',
     desc: 'Herramienta de línea de comandos para guardar y buscar fragmentos de código.',
-    next: '', tags: ['Go', 'CLI'],
-    link: '', created: '2026-03-01'
-  }
+    next: '', tags: ['Go', 'CLI'], link: '', created: '2026-03-01' }
 ];
 
+const FILTERS = [
+  { key: 'todos', label: 'Todos' }, { key: 'activo', label: 'Activo' },
+  { key: 'pausado', label: 'Pausado' }, { key: 'completado', label: 'Completado' },
+  { key: 'idea', label: 'Idea' },
+];
+
+const ICON = { activo: 'ph-circle-dashed', edit: 'ph-pencil-simple', trash: 'ph-trash',
+  link: 'ph-arrow-square-out', folder: 'ph-folder-open', search: 'ph-magnifying-glass' };
+
 let projects = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
-if (!projects) { projects = SAMPLE_PROJECTS; save(); }
+if (!projects) { projects = SAMPLE_PROJECTS; }
 
-let editingId = null;
-let currentFilter = 'todos';
-let searchQuery = '';
+let editingId = null, currentFilter = 'todos', searchQuery = '', prevCounts = {}, justAddedId = null;
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(projects)); }
+// Progressive enhancement: load Motion. If it fails (offline/CDN), the UI still works fully.
+let animate = null, stagger = null;
+try {
+  const M = await import('https://cdn.jsdelivr.net/npm/motion@12/+esm');
+  animate = M.animate; stagger = M.stagger;
+} catch (e) { console.warn('Motion no disponible, sin animaciones JS:', e?.message); }
+const motionOn = !!animate && !reduce;
 
-function setFilter(f, btn) {
-  currentFilter = f;
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  render();
-}
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+const save = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
 
-function setSearch(q) { searchQuery = q.toLowerCase(); render(); }
-
-function filtered() {
-  return projects.filter(p => {
-    const matchStatus = currentFilter === 'todos' || p.status === currentFilter;
-    const matchSearch = !searchQuery ||
-      p.name.toLowerCase().includes(searchQuery) ||
-      (p.desc||'').toLowerCase().includes(searchQuery) ||
-      (p.tags||[]).some(t => t.toLowerCase().includes(searchQuery));
-    return matchStatus && matchSearch;
+/* ---------- Chips (built once, then updated so counters can animate) ---------- */
+const chipRefs = {};
+function buildChips() {
+  const wrap = $('chips');
+  FILTERS.forEach(f => {
+    const btn = document.createElement('button');
+    btn.className = 'chip'; btn.type = 'button'; btn.setAttribute('role', 'tab');
+    btn.dataset.filter = f.key;
+    const count = document.createElement('span');
+    count.className = 'chip-count'; count.textContent = '0';
+    btn.append(document.createTextNode(f.label + ' '), count);
+    btn.addEventListener('click', () => setFilter(f.key));
+    wrap.appendChild(btn);
+    chipRefs[f.key] = { btn, count };
   });
 }
-
-function render() {
-  const list = filtered();
-  // Stats
-  const counts = { activo: 0, pausado: 0, idea: 0, completado: 0 };
-  projects.forEach(p => counts[p.status] = (counts[p.status]||0) + 1);
-  document.getElementById('stats').innerHTML = [
-    ['total', projects.length, '#111'],
-    ['activos', counts.activo, '#16a34a'],
-    ['pausados', counts.pausado, '#ca8a04'],
-    ['ideas', counts.idea, '#6b7280'],
-    ['completados', counts.completado, '#2563eb'],
-  ].map(([label, val, color]) =>
-    `<div class="stat"><div class="stat-value" style="color:${color}">${val}</div><div class="stat-label">${label}</div></div>`
-  ).join('');
-
-  // Cards
-  const el = document.getElementById('projects');
-  if (!list.length) {
-    el.innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">🔍</div><p>No hay proyectos que coincidan.</p></div>`;
-    return;
-  }
-  el.innerHTML = list.map(p => {
-    const tags = (p.tags||[]).map(t => `<span class="tag">${t}</span>`).join('');
-    const link = p.link ? `<a class="card-link" href="${p.link}" target="_blank">🔗 Abrir</a>` : '';
-    return `
-    <div class="card">
-      <div class="card-top">
-        <div class="card-title">${p.name}</div>
-        <div class="card-actions">
-          <button class="icon-btn" title="Editar" onclick="editProject(${p.id})">✏️</button>
-          <button class="icon-btn" title="Eliminar" onclick="deleteProject(${p.id})">🗑️</button>
-        </div>
-      </div>
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-        <span class="badge badge-${p.status}">${p.status}</span>
-        <span class="priority"><span class="dot dot-${p.priority}"></span>${p.priority}</span>
-      </div>
-      ${p.desc ? `<div class="card-desc">${p.desc}</div>` : ''}
-      ${p.next ? `<div class="card-next">${p.next}</div>` : ''}
-      <div class="card-footer">
-        <div class="card-tags">${tags}</div>
-        ${link}
-      </div>
-      <div class="card-date">Creado: ${p.created || '—'}</div>
-    </div>`;
-  }).join('');
+function computeCounts() {
+  const c = { todos: projects.length, activo: 0, pausado: 0, idea: 0, completado: 0 };
+  projects.forEach(p => { c[p.status] = (c[p.status] || 0) + 1; });
+  return c;
+}
+function updateChips(c) {
+  FILTERS.forEach(f => {
+    const { btn, count } = chipRefs[f.key];
+    const active = currentFilter === f.key;
+    btn.classList.toggle('is-active', active);
+    btn.setAttribute('aria-selected', active);
+    const prev = prevCounts[f.key] ?? c[f.key], next = c[f.key];
+    if (motionOn && prev !== next) {
+      animate(prev, next, { duration: 0.5, ease: [0.23, 1, 0.32, 1], onUpdate: v => count.textContent = Math.round(v) });
+    } else { count.textContent = next; }
+  });
+}
+function updateBrandSub(c) {
+  $('brand-sub').textContent = projects.length
+    ? `${projects.length} ${projects.length === 1 ? 'proyecto' : 'proyectos'}, ${c.activo} ${c.activo === 1 ? 'activo' : 'activos'}`
+    : 'sin proyectos aún';
 }
 
+/* ---------- Cards ---------- */
+function filtered() {
+  return projects.filter(p => {
+    const okStatus = currentFilter === 'todos' || p.status === currentFilter;
+    const okSearch = !searchQuery || p.name.toLowerCase().includes(searchQuery) ||
+      (p.desc || '').toLowerCase().includes(searchQuery) ||
+      (p.tags || []).some(t => t.toLowerCase().includes(searchQuery));
+    return okStatus && okSearch;
+  });
+}
+function cardHTML(p) {
+  const tags = (p.tags || []).map(t => `<span class="tag">${esc(t)}</span>`).join('');
+  const link = p.link ? `<a class="card-link" href="${esc(p.link)}" target="_blank" rel="noopener noreferrer"><i class="ph ${ICON.link}"></i> Abrir</a>` : '';
+  return `<article class="card" data-id="${p.id}">
+    <div class="card-head">
+      <h3 class="card-title">${esc(p.name)}</h3>
+      <div class="card-tools">
+        <button class="icon-btn" data-action="edit" data-id="${p.id}" aria-label="Editar ${esc(p.name)}"><i class="ph ${ICON.edit}"></i></button>
+        <button class="icon-btn icon-btn--danger" data-action="delete" data-id="${p.id}" aria-label="Eliminar ${esc(p.name)}"><i class="ph ${ICON.trash}"></i></button>
+      </div>
+    </div>
+    <div class="card-meta">
+      <span class="badge badge--${esc(p.status)}">${esc(p.status)}</span>
+      <span class="prio"><span class="dot dot--${esc(p.priority)}"></span>${esc(p.priority)}</span>
+    </div>
+    ${p.desc ? `<p class="card-desc">${esc(p.desc)}</p>` : ''}
+    ${p.next ? `<div class="card-next"><span class="lbl">Sigue</span><span>${esc(p.next)}</span></div>` : ''}
+    <div class="card-foot"><div class="tags">${tags}</div>${link}</div>
+    ${p.created ? `<div class="card-date">${esc(p.created)}</div>` : ''}
+  </article>`;
+}
+function snapshot() {
+  const m = new Map();
+  document.querySelectorAll('#projects .card').forEach(el => m.set(el.dataset.id, el.getBoundingClientRect()));
+  return m;
+}
+function flip(prev) {
+  document.querySelectorAll('#projects .card').forEach(el => {
+    const old = prev.get(el.dataset.id);
+    if (!old) { animate(el, { opacity: [0, 1], transform: ['translateY(10px) scale(0.98)', 'none'] }, { duration: 0.4, ease: [0.23, 1, 0.32, 1] }); return; }
+    const now = el.getBoundingClientRect();
+    const dx = old.left - now.left, dy = old.top - now.top;
+    // On-screen movement (Emil rule #2) -> ease-in-out
+    if (dx || dy) animate(el, { transform: [`translate(${dx}px, ${dy}px)`, 'translate(0,0)'] }, { duration: 0.42, ease: [0.77, 0, 0.175, 1] });
+  });
+}
+// mode: 'enter' (mount stagger), 'animate' (FLIP), 'none' (instant, for search typing)
+function renderCards(mode) {
+  const list = filtered();
+  const el = $('projects');
+  const prev = (mode === 'animate' && motionOn) ? snapshot() : null;
+
+  if (!list.length) {
+    const isEmpty = projects.length === 0;
+    el.innerHTML = `<div class="empty">
+      <div class="empty-icon"><i class="ph ${isEmpty ? ICON.folder : ICON.search}"></i></div>
+      <h2>${isEmpty ? 'Aún no tienes proyectos' : 'Sin resultados'}</h2>
+      <p>${isEmpty ? 'Crea tu primer proyecto para empezar a organizar en qué estás trabajando y qué sigue.'
+                   : 'Ningún proyecto coincide con este filtro o búsqueda. Prueba con otros términos.'}</p>
+      ${isEmpty ? `<button class="btn btn-primary" data-action="new"><i class="ph ph-plus"></i> Crear proyecto</button>`
+                : `<button class="btn btn-ghost" data-action="clear">Limpiar filtros</button>`}</div>`;
+    return;
+  }
+
+  el.innerHTML = list.map(cardHTML).join('');
+  const cards = el.querySelectorAll('.card');
+  if (mode === 'enter' && motionOn) {
+    animate(cards, { opacity: [0, 1], transform: ['translateY(12px)', 'none'] },
+      { duration: 0.42, delay: stagger(0.035), ease: [0.23, 1, 0.32, 1] });
+  } else if (prev) { flip(prev); }
+  if (justAddedId != null) {
+    const nc = el.querySelector(`.card[data-id="${justAddedId}"]`);
+    if (nc) { nc.classList.add('flash'); nc.addEventListener('animationend', () => nc.classList.remove('flash'), { once: true }); }
+    justAddedId = null;
+  }
+}
+
+function render(mode) {
+  const c = computeCounts();
+  updateChips(c); updateBrandSub(c); renderCards(mode);
+  prevCounts = c;
+}
+
+function setFilter(f) { currentFilter = f; render('animate'); }
+
+/* ---------- Modal ---------- */
+const dlg = $('modal');
 function openModal(id = null) {
   editingId = id;
   const p = id ? projects.find(x => x.id === id) : null;
-  document.getElementById('modalTitle').textContent = id ? 'Editar proyecto' : 'Nuevo proyecto';
-  document.getElementById('f-name').value = p?.name || '';
-  document.getElementById('f-desc').value = p?.desc || '';
-  document.getElementById('f-status').value = p?.status || 'activo';
-  document.getElementById('f-priority').value = p?.priority || 'media';
-  document.getElementById('f-next').value = p?.next || '';
-  document.getElementById('f-tags').value = (p?.tags||[]).join(', ');
-  document.getElementById('f-link').value = p?.link || '';
-  document.getElementById('modalOverlay').classList.add('open');
-  document.getElementById('f-name').focus();
+  $('modalTitle').textContent = id ? 'Editar proyecto' : 'Nuevo proyecto';
+  $('modalSub').textContent = id ? 'Actualiza los detalles de este proyecto.' : 'Registra en qué estás trabajando y qué sigue.';
+  $('saveBtn').textContent = id ? 'Guardar cambios' : 'Guardar proyecto';
+  $('f-name').value = p?.name || ''; $('f-desc').value = p?.desc || '';
+  $('f-status').value = p?.status || 'activo'; $('f-priority').value = p?.priority || 'media';
+  $('f-next').value = p?.next || ''; $('f-tags').value = (p?.tags || []).join(', '); $('f-link').value = p?.link || '';
+  $('f-name').classList.remove('invalid'); $('nameErr').classList.remove('show');
+  dlg.showModal();
+  requestAnimationFrame(() => $('f-name').focus());
 }
-
-function editProject(id) { openModal(id); }
-
-function closeModal() {
-  document.getElementById('modalOverlay').classList.remove('open');
-  editingId = null;
-}
+function closeModal() { dlg.close(); }
+dlg.addEventListener('close', () => { editingId = null; });
+dlg.addEventListener('click', e => { if (e.target === dlg) closeModal(); });
 
 function saveProject() {
-  const name = document.getElementById('f-name').value.trim();
-  if (!name) { alert('El nombre es obligatorio.'); return; }
+  const nameInput = $('f-name'), name = nameInput.value.trim();
+  if (!name) { nameInput.classList.add('invalid'); $('nameErr').classList.add('show'); nameInput.focus(); return; }
   const data = {
-    name,
-    desc: document.getElementById('f-desc').value.trim(),
-    status: document.getElementById('f-status').value,
-    priority: document.getElementById('f-priority').value,
-    next: document.getElementById('f-next').value.trim(),
-    tags: document.getElementById('f-tags').value.split(',').map(t=>t.trim()).filter(Boolean),
-    link: document.getElementById('f-link').value.trim(),
+    name, desc: $('f-desc').value.trim(), status: $('f-status').value, priority: $('f-priority').value,
+    next: $('f-next').value.trim(), tags: $('f-tags').value.split(',').map(t => t.trim()).filter(Boolean), link: $('f-link').value.trim(),
   };
-  if (editingId) {
-    const idx = projects.findIndex(p => p.id === editingId);
-    projects[idx] = { ...projects[idx], ...data };
-  } else {
-    projects.unshift({ id: Date.now(), created: new Date().toISOString().slice(0,10), ...data });
+  if (editingId) { const i = projects.findIndex(p => p.id === editingId); projects[i] = { ...projects[i], ...data }; }
+  else { const nid = Date.now(); justAddedId = nid; projects.unshift({ id: nid, created: new Date().toISOString().slice(0, 10), ...data }); }
+  save(); closeModal(); render('animate');
+}
+async function deleteProject(id) {
+  if (!confirm('¿Eliminar este proyecto? Esta acción no se puede deshacer.')) return;
+  const el = document.querySelector(`#projects .card[data-id="${id}"]`);
+  // Exit animation (Emil: don't let elements vanish abruptly; exit fast)
+  if (el && motionOn) {
+    try { await animate(el, { opacity: [1, 0], transform: ['scale(1)', 'scale(0.92)'] }, { duration: 0.18, ease: [0.23, 1, 0.32, 1] }).finished; } catch (e) {}
   }
-  save(); closeModal(); render();
+  projects = projects.filter(p => p.id !== id); save(); render('animate');
 }
+function clearFilters() { currentFilter = 'todos'; searchQuery = ''; $('search').value = ''; render('animate'); }
 
-function deleteProject(id) {
-  if (!confirm('¿Eliminar este proyecto?')) return;
-  projects = projects.filter(p => p.id !== id);
-  save(); render();
+/* ---------- Wiring (event delegation, no inline handlers) ---------- */
+$('projects').addEventListener('click', e => {
+  const t = e.target.closest('[data-action]'); if (!t) return;
+  const a = t.dataset.action;
+  if (a === 'edit') openModal(+t.dataset.id);
+  else if (a === 'delete') deleteProject(+t.dataset.id);
+  else if (a === 'new') openModal();
+  else if (a === 'clear') clearFilters();
+});
+document.querySelectorAll('[data-action="new"]').forEach(b => b.addEventListener('click', () => openModal()));
+$('cancelBtn').addEventListener('click', closeModal);
+$('projForm').addEventListener('submit', e => { e.preventDefault(); saveProject(); });
+let searchTimer;
+$('search').addEventListener('input', e => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => { searchQuery = e.target.value.toLowerCase().trim(); render('none'); }, 80);
+});
+
+buildChips();
+render('enter');
+// FAB spring entrance (Emil rule #5: alive elements -> spring)
+if (motionOn) {
+  try { animate('.fab', { opacity: [0, 1], transform: ['scale(0.85) translateY(8px)', 'none'] }, { type: 'spring', bounce: 0.3, visualDuration: 0.45 }); } catch (e) {}
 }
-
-render();
 </script>
 </body>
 </html>
