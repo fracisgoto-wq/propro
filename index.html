@@ -284,6 +284,17 @@
   @keyframes delFill { to { transform: scaleX(1); } }
   dialog#modal.dragging { transition: none !important; }
 
+  /* Premium delete confirmation (in-modal) */
+  .confirm-ov { position: absolute; inset: 0; z-index: 12; display: flex; align-items: center; justify-content: center; padding: 24px; background: oklch(0.972 0.005 95 / 0.55); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); opacity: 0; transition: opacity .2s var(--ease); }
+  .confirm-ov.show { opacity: 1; }
+  .confirm-box { text-align: center; max-width: 330px; transform: scale(0.95) translateY(6px); transition: transform .25s var(--ease); }
+  .confirm-ov.show .confirm-box { transform: none; }
+  .confirm-ic { width: 50px; height: 50px; margin: 0 auto 14px; border-radius: 50%; display: grid; place-items: center; font-size: 24px; color: var(--danger); background: oklch(0.53 0.195 28 / 0.12); border: 1px solid oklch(0.53 0.195 28 / 0.22); }
+  .confirm-box h3 { font-family: var(--font-display); font-weight: 700; font-size: 21px; letter-spacing: -0.02em; color: var(--ink); }
+  .confirm-box p { font-size: 13.5px; color: var(--muted); margin: 9px 0 22px; line-height: 1.5; }
+  .confirm-actions { display: flex; gap: 10px; justify-content: center; }
+  .btn-danger-solid { background: var(--danger); color: #fff; box-shadow: inset 0 1px 1px oklch(1 0 0 / 0.25), 0 6px 16px -8px oklch(0.53 0.195 28 / 0.55); }
+
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
 </style>
 </head>
@@ -545,10 +556,24 @@ async function runDelete() {
   btn.classList.remove('loading'); btn.innerHTML = orig; deleting = false;
 }
 // Swipe-right dentro del modal → confirmación → animación "Borrando…" → eliminar
-function confirmDeleteFromModal() {
-  if (editingId == null) return;
-  if (!confirm('¿Eliminar este proyecto? Esta acción no se puede deshacer.')) return;
-  runDelete(); // muestra la animación de carga en el botón Eliminar
+// Premium in-modal confirmation overlay → resolves true/false
+function askConfirm(name) {
+  return new Promise(resolve => {
+    const mc = dlg.querySelector('.modal-card');
+    if (!mc) { resolve(window.confirm('¿Eliminar este proyecto?')); return; }
+    const ov = document.createElement('div');
+    ov.className = 'confirm-ov';
+    ov.innerHTML = '<div class="confirm-box"><div class="confirm-ic"><i class="ph ph-trash"></i></div><h3>¿Seguro que quieres borrar?</h3><p>"' + esc(name) + '" se eliminará y no se puede deshacer.</p><div class="confirm-actions"><button type="button" class="btn btn-ghost" data-c="no">Cancelar</button><button type="button" class="btn btn-danger-solid" data-c="yes">Sí, eliminar</button></div></div>';
+    mc.appendChild(ov);
+    requestAnimationFrame(() => ov.classList.add('show'));
+    const done = v => { ov.classList.remove('show'); setTimeout(() => ov.remove(), 220); resolve(v); };
+    ov.addEventListener('click', e => { if (e.target === ov) return done(false); const b = e.target.closest('[data-c]'); if (b) done(b.dataset.c === 'yes'); });
+  });
+}
+async function promptDelete() {
+  if (editingId == null || deleting) return;
+  const p = projects.find(x => x.id === editingId);
+  if (await askConfirm(p ? p.name : '')) runDelete();
 }
 function clearFilters() { currentFilter = 'todos'; searchQuery = ''; $('search').value = ''; render('animate'); }
 
@@ -620,7 +645,7 @@ if (isTouch) {
       mc.style.transition = 'transform .25s var(--ease), opacity .25s var(--ease)';
       mc.style.transform = ''; mc.style.opacity = '';
       setTimeout(() => { mc.style.transition = ''; }, 260);
-      if (dx > (mc.offsetWidth || 360) * 0.35) confirmDeleteFromModal();
+      if (dx > (mc.offsetWidth || 360) * 0.35) promptDelete();
     };
     mc.addEventListener('pointerup', endSwipe);
     mc.addEventListener('pointercancel', endSwipe);
@@ -633,7 +658,7 @@ document.body.addEventListener('click', e => {
   const card = e.target.closest('#projects .card');           // tap a card to open it
   if (card && !e.target.closest('a')) openModal(+card.dataset.id);
 });
-$('deleteBtn').addEventListener('click', runDelete);
+$('deleteBtn').addEventListener('click', promptDelete);
 $('projects').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { const c = e.target.closest('.card'); if (c) { e.preventDefault(); openModal(+c.dataset.id); } } });
 $('cancelBtn').addEventListener('click', closeModal);
 $('projForm').addEventListener('submit', e => { e.preventDefault(); saveProject(); });
