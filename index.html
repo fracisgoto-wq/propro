@@ -90,18 +90,24 @@
   .btn {
     display: inline-flex; align-items: center; gap: 9px; padding: 11px 18px; border-radius: 999px; min-height: 44px;
     font-family: var(--font-sans); font-size: 14px; font-weight: 600; letter-spacing: -0.01em;
-    cursor: pointer; border: 1px solid transparent; white-space: nowrap; user-select: none;
+    cursor: pointer; border: 1px solid transparent; white-space: nowrap; user-select: none; position: relative; overflow: hidden;
     transition: transform .14s var(--ease), background-color .2s ease, color .2s ease, border-color .2s ease, gap .2s var(--ease);
   }
   .btn i { font-size: 16px; transition: transform .2s var(--ease); }
   .btn:active { transform: scale(0.97); }
   .btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
-  .btn-primary { background: var(--accent); color: var(--ink); }
+  .btn-primary { background: linear-gradient(180deg, oklch(0.93 0.19 122), oklch(0.875 0.19 122)); color: var(--ink); box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.5), 0 6px 18px -8px oklch(0.875 0.19 122 / 0.55); }
+  .btn-primary::before { content: ''; position: absolute; inset: 0; background: linear-gradient(105deg, transparent 35%, oklch(1 0 0 / 0.5) 50%, transparent 65%); transform: translateX(-130%); transition: transform .6s var(--ease); pointer-events: none; }
   .btn-ghost { background: transparent; color: var(--ink); border-color: var(--line-2); }
   .btn-del { background: transparent; color: var(--danger); border-color: transparent; padding-left: 6px; padding-right: 6px; }
   @media (hover: hover) and (pointer: fine) { .btn-del:hover { text-decoration: underline; text-underline-offset: 4px; } }
+  .btn-del.loading { background: var(--danger); color: #fff; border-color: var(--danger); pointer-events: none; text-decoration: none; }
+  .btn-del.loading::before { content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 100%; background: oklch(1 0 0 / 0.16); transform: scaleX(0); transform-origin: left; animation: delFill .9s linear forwards; }
+  .btn-spin { width: 13px; height: 13px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; display: inline-block; animation: spin .7s linear infinite; vertical-align: -1px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
   @media (hover: hover) and (pointer: fine) {
-    .btn-primary:hover { background: var(--accent-deep); gap: 13px; }
+    .btn-primary:hover { background: linear-gradient(180deg, oklch(0.905 0.19 122), oklch(0.845 0.19 122)); gap: 13px; }
+    .btn-primary:hover::before { transform: translateX(130%); }
     .btn-primary:hover i { transform: translateX(3px); }
     .btn-ghost:hover { border-color: var(--ink); background: var(--ink); color: var(--surface); }
     .btn-ghost:hover i { transform: translateX(3px); }
@@ -169,15 +175,25 @@
     .card:hover .card-title { text-decoration-color: var(--ink); }
   }
   .card-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-  .status { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.13em; }
-  .status .d { width: 7px; height: 7px; border-radius: 50%; flex: none; }
-  .status--activo { color: var(--st-activo); } .status--activo .d { background: var(--st-activo); }
-  .status--pausado { color: var(--st-pausado); } .status--pausado .d { background: var(--st-pausado); }
-  .status--completado { color: var(--st-completado); } .status--completado .d { background: var(--st-completado); }
-  .status--idea { color: var(--st-idea); } .status--idea .d { background: var(--st-idea); }
-  .prio { font-family: var(--font-mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--faint); display: inline-flex; align-items: center; gap: 6px; }
-  .prio .pd { width: 6px; height: 6px; border-radius: 50%; }
-  .prio--alta .pd { background: var(--prio-alta); } .prio--media .pd { background: var(--prio-media); } .prio--baja .pd { background: var(--prio-baja); }
+  /* Premium status pill */
+  .status { display: inline-flex; align-items: center; gap: 7px; padding: 4px 11px 4px 9px; border-radius: 999px; font-family: var(--font-mono); font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.14em; border: 1px solid transparent; }
+  .status .d { width: 6px; height: 6px; border-radius: 50%; flex: none; }
+  .status i { font-size: 13px; margin: 0 -2px 0 -1px; }
+  .status--activo { color: var(--st-activo); background: oklch(0.515 0.135 150 / 0.13); border-color: oklch(0.515 0.135 150 / 0.26); }
+  .status--activo .d { background: var(--st-activo); box-shadow: 0 0 0 3px oklch(0.515 0.135 150 / 0.18); }
+  .status--pausado { color: var(--st-pausado); background: oklch(0.560 0.140 55 / 0.13); border-color: oklch(0.560 0.140 55 / 0.26); }
+  .status--pausado .d { background: var(--st-pausado); }
+  .status--completado { color: var(--st-completado); background: oklch(0.490 0.130 250 / 0.13); border-color: oklch(0.490 0.130 250 / 0.26); }
+  .status--idea { color: var(--st-idea); background: oklch(0.540 0.010 60 / 0.10); border-color: oklch(0.540 0.010 60 / 0.22); }
+  .status--idea .d { background: var(--st-idea); }
+  /* Priority as signal bars (premium, non-generic) */
+  .prio { display: inline-flex; align-items: center; gap: 7px; font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.13em; color: var(--muted); }
+  .prio .bars { display: inline-flex; align-items: flex-end; gap: 2px; height: 12px; }
+  .prio .bars i { width: 3px; border-radius: 1px; background: var(--line-2); }
+  .prio .bars i:nth-child(1) { height: 5px; } .prio .bars i:nth-child(2) { height: 8px; } .prio .bars i:nth-child(3) { height: 12px; }
+  .prio--baja .bars i:nth-child(1) { background: var(--prio-baja); }
+  .prio--media .bars i:nth-child(1), .prio--media .bars i:nth-child(2) { background: var(--prio-media); }
+  .prio--alta .bars i { background: var(--prio-alta); }
   .card-title {
     font-family: var(--font-display); font-weight: 700; font-size: clamp(1.45rem, 2.6vw, 1.9rem);
     line-height: 1.1; letter-spacing: -0.01em; color: var(--ink); text-wrap: balance;
@@ -193,7 +209,8 @@
   .tag::before { content: '#'; opacity: 0.4; }
   .card-link { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 600; color: var(--ink); text-decoration: none; }
   .card-link i { font-size: 13px; }
-  .card-date { font-family: var(--font-mono); font-size: 11px; color: var(--faint); font-variant-numeric: tabular-nums; }
+  .card-date { display: inline-flex; align-items: center; gap: 5px; font-family: var(--font-mono); font-size: 10.5px; color: var(--faint); font-variant-numeric: tabular-nums; }
+  .card-date i { font-size: 12px; opacity: 0.8; }
   .go { position: absolute; top: clamp(24px, 3vw, 34px); right: clamp(24px, 3vw, 34px); font-size: 19px; color: var(--ink); opacity: 0; transition: transform .3s var(--ease), opacity .3s ease; pointer-events: none; }
   .card-tools { display: flex; gap: 2px; position: absolute; bottom: clamp(16px, 2vw, 24px); right: clamp(20px, 3vw, 30px); }
   .icon-btn { width: 38px; height: 38px; display: grid; place-items: center; background: transparent; border: none; border-radius: 50%; cursor: pointer; color: var(--muted); font-size: 16px; transition: background-color .15s ease, color .15s ease, transform .12s var(--ease); }
@@ -384,6 +401,8 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
 const save = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
 const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+const fmtDate = iso => { if (!iso) return ''; const d = new Date(iso + 'T00:00:00'); return isNaN(d) ? iso : d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }); };
+async function celebrate() { if (reduce) return; try { const m = await import('https://esm.sh/balloons-js'); m.balloons(); } catch (e) { console.warn('balloons no disponible:', e && e.message); } }
 
 const filterRefs = {};
 function buildFilters() {
@@ -435,13 +454,13 @@ function cardHTML(p) {
   return `<article class="card" data-id="${p.id}" role="button" tabindex="0" aria-label="Abrir ${esc(p.name)}">
     <i class="ph ${ICON.go} go" aria-hidden="true"></i>
     <div class="card-row">
-      <span class="status status--${esc(p.status)}"><span class="d"></span>${esc(cap(p.status))}</span>
-      <span class="prio prio--${esc(p.priority)}"><span class="pd"></span>${esc(p.priority)}</span>
+      <span class="status status--${esc(p.status)}">${p.status === 'completado' ? '<i class="ph ph-check-circle"></i>' : '<span class="d"></span>'}${esc(cap(p.status))}</span>
+      <span class="prio prio--${esc(p.priority)}"><span class="bars"><i></i><i></i><i></i></span>${esc(p.priority)}</span>
     </div>
     <h3 class="card-title">${esc(p.name)}</h3>
     ${p.desc ? `<p class="card-desc">${esc(p.desc)}</p>` : ''}
     ${p.next ? `<div class="card-next"><span class="a">→</span><span>${esc(p.next)}</span></div>` : '<div style="margin-top:auto"></div>'}
-    <div class="card-foot"><div class="tags">${tags}</div>${link || `<span class="card-date">${esc(p.created||'')}</span>`}</div>
+    <div class="card-foot"><div class="tags">${tags}</div>${link || `<span class="card-date"><i class="ph ph-calendar-blank"></i> ${esc(fmtDate(p.created))}</span>`}</div>
   </article>`;
 }
 function snapshot() { const m = new Map(); document.querySelectorAll('#projects .card').forEach(el => m.set(el.dataset.id, el.getBoundingClientRect())); return m; }
@@ -508,43 +527,29 @@ function saveProject() {
   const ni = $('f-name'), name = ni.value.trim();
   if (!name) { ni.classList.add('invalid','shake'); $('nameErr').classList.add('show'); ni.focus(); ni.addEventListener('animationend', () => ni.classList.remove('shake'), { once: true }); return; }
   const data = { name, desc: $('f-desc').value.trim(), status: $('f-status').value, priority: $('f-priority').value, next: $('f-next').value.trim(), tags: $('f-tags').value.split(',').map(t=>t.trim()).filter(Boolean), link: $('f-link').value.trim() };
-  if (editingId) { const i = projects.findIndex(p => p.id === editingId); projects[i] = { ...projects[i], ...data }; }
+  let wasCompleted = false;
+  if (editingId) { const i = projects.findIndex(p => p.id === editingId); wasCompleted = projects[i].status === 'completado'; projects[i] = { ...projects[i], ...data }; }
   else { const nid = Date.now(); justAddedId = nid; projects.unshift({ id: nid, created: new Date().toISOString().slice(0,10), ...data }); }
   save(); closeModal(); render('animate');
+  if (data.status === 'completado' && !wasCompleted) celebrate(); // 🎈 globos al completar
 }
-function deleteProject(id) {
-  if (!confirm('¿Eliminar este proyecto? Esta acción no se puede deshacer.')) return;
-  startDelete(id);
-}
-// Loading animation, then exit, then remove. Used by the 🗑 button and by swipe-to-delete.
-async function startDelete(id) {
-  const el = document.querySelector(`#projects .card[data-id="${id}"]`);
-  if (el) { el.style.transform = ''; el.style.opacity = ''; } // reset any swipe offset so the loader shows in place
-  if (el && motionOn && !reduce) {
-    const ov = document.createElement('div');
-    ov.className = 'del-overlay';
-    ov.innerHTML = '<span>Borrando…</span><span class="bar"></span>';
-    el.appendChild(ov); el.classList.add('deleting');
-    await new Promise(r => setTimeout(r, 850));
-    try { await animate(el, { opacity: [1,0], transform: ['none','scale(0.96)'] }, { duration: 0.22, ease: [0.22,1,0.36,1] }).finished; } catch (e) {}
-  } else if (el && motionOn) {
-    try { await animate(el, { opacity: [1,0] }, { duration: 0.18 }).finished; } catch (e) {}
-  }
-  projects = projects.filter(p => p.id !== id); save(); render('animate');
-}
-// Swipe-right dentro del modal → confirmación → animación "Borrando…" → eliminar
-async function confirmDeleteFromModal() {
-  const id = editingId; if (id == null) return;
-  if (!confirm('¿Eliminar este proyecto? Esta acción no se puede deshacer.')) return;
-  const cardEl = dlg.querySelector('.modal-card');
-  if (cardEl && motionOn && !reduce) {
-    const ov = document.createElement('div'); ov.className = 'del-overlay'; ov.innerHTML = '<span>Borrando…</span><span class="bar"></span>';
-    cardEl.appendChild(ov);
-    requestAnimationFrame(() => cardEl.classList.add('deleting'));
-    await new Promise(r => setTimeout(r, 950));
-  }
+let deleting = false;
+// Delete with the loading animation INSIDE the premium button: turns red, spinner + "Borrando…" + progress fill.
+async function runDelete() {
+  const id = editingId; if (id == null || deleting) return;
+  deleting = true;
+  const btn = $('deleteBtn'), orig = btn.innerHTML;
+  btn.classList.add('loading'); btn.innerHTML = '<span class="btn-spin"></span> Borrando…';
+  if (motionOn && !reduce) await new Promise(r => setTimeout(r, 900));
   closeModal();
   projects = projects.filter(p => p.id !== id); save(); render('animate');
+  btn.classList.remove('loading'); btn.innerHTML = orig; deleting = false;
+}
+// Swipe-right dentro del modal → confirmación → animación "Borrando…" → eliminar
+function confirmDeleteFromModal() {
+  if (editingId == null) return;
+  if (!confirm('¿Eliminar este proyecto? Esta acción no se puede deshacer.')) return;
+  runDelete(); // muestra la animación de carga en el botón Eliminar
 }
 function clearFilters() { currentFilter = 'todos'; searchQuery = ''; $('search').value = ''; render('animate'); }
 
@@ -629,7 +634,7 @@ document.body.addEventListener('click', e => {
   const card = e.target.closest('#projects .card');           // tap a card to open it
   if (card && !e.target.closest('a')) openModal(+card.dataset.id);
 });
-$('deleteBtn').addEventListener('click', () => { const id = editingId; closeModal(); if (id != null) startDelete(id); });
+$('deleteBtn').addEventListener('click', runDelete);
 $('projects').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { const c = e.target.closest('.card'); if (c) { e.preventDefault(); openModal(+c.dataset.id); } } });
 $('cancelBtn').addEventListener('click', closeModal);
 $('projForm').addEventListener('submit', e => { e.preventDefault(); saveProject(); });
