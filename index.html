@@ -334,11 +334,11 @@ const FILTERS = [ { key: 'todos', label: 'Todos' }, { key: 'activo', label: 'Act
 const ICON = { edit: 'ph-pencil-simple', trash: 'ph-trash', link: 'ph-arrow-up-right', go: 'ph-arrow-up-right' };
 
 let projects = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || SAMPLE_PROJECTS;
-let editingId = null, currentFilter = 'todos', searchQuery = '', prevCounts = {}, justAddedId = null;
+let editingId = null, currentFilter = 'todos', searchQuery = '', prevCounts = {}, justAddedId = null, heroAnimated = false;
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-let animate = null, stagger = null;
-try { const M = await import('https://cdn.jsdelivr.net/npm/motion@12/+esm'); animate = M.animate; stagger = M.stagger; }
+let animate = null, stagger = null, inView = null;
+try { const M = await import('https://cdn.jsdelivr.net/npm/motion@12/+esm'); animate = M.animate; stagger = M.stagger; inView = M.inView; }
 catch (e) { console.warn('Motion no disponible:', e?.message); }
 const motionOn = !!animate && !reduce;
 
@@ -371,10 +371,17 @@ function updateFilters(c) {
   });
 }
 function updateStats(c) {
-  const items = [[String(projects.length).padStart(2,'0'), projects.length === 1 ? 'Proyecto' : 'Proyectos'], [String(c.activo).padStart(2,'0'), 'Activos'], [String(c.completado).padStart(2,'0'), 'Completados']];
-  $('hero-stats').innerHTML = items.map(([n,l]) => `<div class="stat"><span class="n">${n}</span><div class="l">${l}</div></div>`).join('');
+  const data = [[projects.length, projects.length === 1 ? 'Proyecto' : 'Proyectos'], [c.activo, 'Activos'], [c.completado, 'Completados']];
+  $('hero-stats').innerHTML = data.map(([n,l]) => `<div class="stat"><span class="n">${String(n).padStart(2,'0')}</span><div class="l">${l}</div></div>`).join('');
   $('nav-meta').textContent = `${projects.length} proyectos / ${c.activo} activos`;
   $('foot-count').textContent = `${String(projects.length).padStart(2,'0')} proyectos`;
+  if (!heroAnimated && motionOn) {
+    heroAnimated = true;
+    $('hero-stats').querySelectorAll('.stat .n').forEach((el, i) => {
+      const target = data[i][0]; // final value stays if motion never ticks (fail-safe, never stuck on 00)
+      animate(0, target, { duration: 1.0, delay: 0.4 + i * 0.1, ease: [0.22,1,0.36,1], onUpdate: v => el.textContent = String(Math.round(v)).padStart(2,'0') });
+    });
+  }
 }
 
 function filtered() {
@@ -424,7 +431,7 @@ function renderCards(mode) {
   }
   el.innerHTML = list.map(cardHTML).join('');
   const cards = el.querySelectorAll('.card');
-  if (mode === 'enter' && motionOn) animate(cards, { opacity: [0,1], transform: ['translateY(18px)','none'] }, { duration: 0.55, delay: stagger(0.05), ease: [0.22,1,0.36,1] });
+  if (mode === 'enter' && motionOn) animate(cards, { opacity: [0,1], transform: ['translateY(22px)','none'] }, { duration: 0.6, delay: stagger(0.07), ease: [0.22,1,0.36,1] });
   else if (prev) flip(prev);
   if (justAddedId != null) { const nc = el.querySelector(`.card[data-id="${justAddedId}"]`); if (nc && motionOn) animate(nc, { opacity:[0,1], transform:['translateY(-10px)','none'] }, { duration: 0.5, ease:[0.22,1,0.36,1] }); justAddedId = null; }
 }
@@ -483,8 +490,14 @@ if (motionOn) {
     animate('.hero h1', { opacity: [0,1], transform: ['translateY(14px)','none'] }, { duration: 0.75, ease: [0.22,1,0.36,1], delay: 0.06 });
     animate('.hero-sub', { opacity: [0,1], transform: ['translateY(10px)','none'] }, { duration: 0.6, ease: [0.22,1,0.36,1], delay: 0.18 });
     animate('.hero-stats', { opacity: [0,1] }, { duration: 0.6, delay: 0.3 });
+    animate('.controls', { opacity: [0,1], transform: ['translateY(8px)','none'] }, { duration: 0.5, delay: 0.42, ease: [0.22,1,0.36,1] });
   } catch (e) {}
 }
+
+// Safety net: an entrance animation must never leave content hidden (backgrounded tab, CDN fail, headless renderer).
+setTimeout(() => {
+  document.querySelectorAll('.kicker, .hero h1, .hero-sub, .hero-stats, .controls, #projects .card').forEach(el => { el.style.opacity = '1'; el.style.transform = 'none'; });
+}, 1500);
 </script>
 </body>
 </html>
