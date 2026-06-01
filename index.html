@@ -96,9 +96,9 @@
   .btn i { font-size: 16px; transition: transform .2s var(--ease); }
   .btn:active { transform: scale(0.97); }
   .btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
-  .btn-primary { background: linear-gradient(180deg, oklch(0.93 0.19 122), oklch(0.875 0.19 122)); color: var(--ink); box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.5), 0 6px 18px -8px oklch(0.875 0.19 122 / 0.55); }
-  .btn-primary::before { content: ''; position: absolute; inset: 0; background: linear-gradient(105deg, transparent 35%, oklch(1 0 0 / 0.5) 50%, transparent 65%); transform: translateX(-130%); transition: transform .6s var(--ease); pointer-events: none; }
-  .btn-ghost { background: transparent; color: var(--ink); border-color: var(--line-2); }
+  /* Liquid-glass lozenge buttons (relieve interno tipo cristal) */
+  .btn-primary { background: linear-gradient(180deg, oklch(0.945 0.16 122), oklch(0.875 0.185 122)); color: var(--ink); box-shadow: inset 0 1.5px 1px oklch(1 0 0 / 0.75), inset 0 -2px 3px oklch(0.45 0.12 122 / 0.4), 0 6px 18px -8px oklch(0.85 0.185 122 / 0.5); }
+  .btn-ghost { background: oklch(1 0 0 / 0.65); color: var(--ink); border-color: oklch(1 0 0 / 0.7); box-shadow: inset 0 1px 1px oklch(1 0 0 / 0.85), inset 0 -1px 2px oklch(0.2 0.02 60 / 0.06), 0 4px 12px -6px oklch(0.2 0.02 60 / 0.16); }
   .btn-del { background: transparent; color: var(--danger); border-color: transparent; padding-left: 6px; padding-right: 6px; }
   @media (hover: hover) and (pointer: fine) { .btn-del:hover { text-decoration: underline; text-underline-offset: 4px; } }
   .btn-del.loading { background: var(--danger); color: #fff; border-color: var(--danger); pointer-events: none; text-decoration: none; }
@@ -106,8 +106,7 @@
   .btn-spin { width: 13px; height: 13px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; display: inline-block; animation: spin .7s linear infinite; vertical-align: -1px; }
   @keyframes spin { to { transform: rotate(360deg); } }
   @media (hover: hover) and (pointer: fine) {
-    .btn-primary:hover { background: linear-gradient(180deg, oklch(0.905 0.19 122), oklch(0.845 0.19 122)); gap: 13px; }
-    .btn-primary:hover::before { transform: translateX(130%); }
+    .btn-primary:hover { background: linear-gradient(180deg, oklch(0.915 0.17 122), oklch(0.855 0.19 122)); gap: 13px; }
     .btn-primary:hover i { transform: translateX(3px); }
     .btn-ghost:hover { border-color: var(--ink); background: var(--ink); color: var(--surface); }
     .btn-ghost:hover i { transform: translateX(3px); }
