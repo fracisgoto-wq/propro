@@ -115,6 +115,7 @@
     color: var(--ink); text-wrap: balance; margin: 0 auto; max-width: 14ch;
   }
   .hero h1 em { font-style: italic; font-weight: 700; }
+  .hero h1 .w { display: inline-block; }
   .hero-sub { margin: clamp(22px, 3vw, 30px) auto 0; max-width: 44ch; font-size: clamp(1.05rem, 2.1vw, 1.28rem); line-height: 1.5; color: var(--ink-2); }
   .hero-stats { margin: clamp(32px, 5vw, 52px) auto 0; display: inline-flex; gap: clamp(30px, 5vw, 60px); flex-wrap: wrap; justify-content: center; border-top: 1px solid var(--line); padding-top: 24px; }
   .stat { text-align: center; }
@@ -250,7 +251,7 @@
 <main class="wrap" id="top">
   <section class="hero">
     <div class="kicker">Taller personal</div>
-    <h1>Construye. Envía. <em>Repite.</em></h1>
+    <h1><span class="w">Construye.</span> <span class="w">Envía.</span> <span class="w"><em>Repite.</em></span></h1>
     <p class="hero-sub">Cada proyecto que estás creando, con su estado, lo que sigue y dónde retomarlo. En un solo lugar.</p>
     <div class="hero-stats" id="hero-stats"></div>
   </section>
@@ -337,8 +338,8 @@ let projects = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || SAMPLE
 let editingId = null, currentFilter = 'todos', searchQuery = '', prevCounts = {}, justAddedId = null, heroAnimated = false;
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-let animate = null, stagger = null, inView = null;
-try { const M = await import('https://cdn.jsdelivr.net/npm/motion@12/+esm'); animate = M.animate; stagger = M.stagger; inView = M.inView; }
+let animate = null, stagger = null, inView = null, scrollFn = null;
+try { const M = await import('https://cdn.jsdelivr.net/npm/motion@12/+esm'); animate = M.animate; stagger = M.stagger; inView = M.inView; scrollFn = M.scroll; }
 catch (e) { console.warn('Motion no disponible:', e?.message); }
 const motionOn = !!animate && !reduce;
 
@@ -487,16 +488,22 @@ render('enter');
 if (motionOn) {
   try {
     animate('.kicker', { opacity: [0,1] }, { duration: 0.5, ease: [0.22,1,0.36,1] });
-    animate('.hero h1', { opacity: [0,1], transform: ['translateY(14px)','none'] }, { duration: 0.75, ease: [0.22,1,0.36,1], delay: 0.06 });
-    animate('.hero-sub', { opacity: [0,1], transform: ['translateY(10px)','none'] }, { duration: 0.6, ease: [0.22,1,0.36,1], delay: 0.18 });
-    animate('.hero-stats', { opacity: [0,1] }, { duration: 0.6, delay: 0.3 });
-    animate('.controls', { opacity: [0,1], transform: ['translateY(8px)','none'] }, { duration: 0.5, delay: 0.42, ease: [0.22,1,0.36,1] });
+    // Kinetic headline — each word rises and fades in, in sequence
+    animate('.hero h1 .w', { opacity: [0,1], transform: ['translateY(48px)','none'] }, { duration: 0.85, delay: stagger(0.09, { start: 0.05 }), ease: [0.22,1,0.36,1] });
+    animate('.hero-sub', { opacity: [0,1], transform: ['translateY(10px)','none'] }, { duration: 0.6, ease: [0.22,1,0.36,1], delay: 0.34 });
+    animate('.hero-stats', { opacity: [0,1] }, { duration: 0.6, delay: 0.46 });
+    animate('.controls', { opacity: [0,1], transform: ['translateY(8px)','none'] }, { duration: 0.5, delay: 0.52, ease: [0.22,1,0.36,1] });
+    // Subtle editorial scroll-fade — the hero recedes as you scroll into the work (Wolverine-style)
+    if (scrollFn) {
+      const heroEl = document.querySelector('.hero');
+      scrollFn((p) => { heroEl.style.opacity = String(1 - p * 0.6); heroEl.style.transform = `translateY(${-p * 36}px)`; }, { target: heroEl, offset: ['start start', 'end start'] });
+    }
   } catch (e) {}
 }
 
 // Safety net: an entrance animation must never leave content hidden (backgrounded tab, CDN fail, headless renderer).
 setTimeout(() => {
-  document.querySelectorAll('.kicker, .hero h1, .hero-sub, .hero-stats, .controls, #projects .card').forEach(el => { el.style.opacity = '1'; el.style.transform = 'none'; });
+  document.querySelectorAll('.kicker, .hero h1 .w, .hero-sub, .hero-stats, .controls, #projects .card').forEach(el => { el.style.opacity = '1'; el.style.transform = 'none'; });
 }, 1500);
 </script>
 </body>
