@@ -305,16 +305,17 @@
   /* Card aura: mesh-gradient fluido POR TARJETA (recreado en CSS, tintado por prioridad).
      Mismo espíritu que el shader de fondo; dos blobs radiales que se mueven (solo transform). */
   .card-flow { position: absolute; inset: 0; z-index: 0; overflow: hidden; border-radius: inherit; pointer-events: none; }
-  /* Velo de luz al centro: calma la zona de texto (contraste ≥4.5:1) y deja el color vivo en las esquinas. */
-  .card-flow::after { content: ''; position: absolute; inset: 0; z-index: 1; background: radial-gradient(120% 92% at 50% 46%, oklch(0.972 0.006 95 / 0.40), transparent 72%); }
-  .card-flow i { position: absolute; display: block; width: 150%; height: 150%; border-radius: 50%; filter: blur(30px); will-change: transform; }
-  .card-flow i:nth-child(1) { top: -40%; left: -28%; background: radial-gradient(circle at 50% 50%, var(--flow, transparent), transparent 62%); animation: aura1 16s ease-in-out infinite alternate; }
-  .card-flow i:nth-child(2) { bottom: -42%; right: -26%; background: radial-gradient(circle at 50% 50%, var(--flow2, var(--flow, transparent)), transparent 64%); animation: aura2 21s ease-in-out infinite alternate; }
+  /* Velo de luz suave al centro: calma la zona de texto sin lavar el color (ligero, para que el tinte se vea tambien en movil). */
+  .card-flow::after { content: ''; position: absolute; inset: 0; z-index: 1; background: radial-gradient(120% 92% at 50% 46%, oklch(0.972 0.006 95 / 0.22), transparent 66%); }
+  /* Sin filter:blur a proposito: en iOS Safari un blur anidado bajo el backdrop-filter de la tarjeta podia no pintarse; la suavidad la da el propio degradado. */
+  .card-flow i { position: absolute; display: block; width: 168%; height: 168%; border-radius: 50%; }
+  .card-flow i:nth-child(1) { top: -42%; left: -30%; background: radial-gradient(circle at 50% 50%, var(--flow, transparent), transparent 60%); animation: aura1 16s ease-in-out infinite alternate; }
+  .card-flow i:nth-child(2) { bottom: -44%; right: -28%; background: radial-gradient(circle at 50% 50%, var(--flow2, var(--flow, transparent)), transparent 62%); animation: aura2 21s ease-in-out infinite alternate; }
   @keyframes aura1 { from { transform: translate3d(0, 0, 0) scale(1); } to { transform: translate3d(16%, 12%, 0) scale(1.2); } }
   @keyframes aura2 { from { transform: translate3d(0, 0, 0) scale(1.08); } to { transform: translate3d(-15%, -12%, 0) scale(1.26); } }
-  .card[data-prio="alta"]  { --flow: oklch(0.70 0.17 33 / 0.50);  --flow2: oklch(0.80 0.15 55 / 0.40); }
-  .card[data-prio="media"] { --flow: oklch(0.83 0.14 78 / 0.50);  --flow2: oklch(0.88 0.12 100 / 0.40); }
-  .card[data-prio="baja"]  { --flow: oklch(0.76 0.14 158 / 0.48); --flow2: oklch(0.82 0.12 182 / 0.38); }
+  .card[data-prio="alta"]  { --flow: oklch(0.66 0.20 32 / 0.62);  --flow2: oklch(0.78 0.16 55 / 0.48); }
+  .card[data-prio="media"] { --flow: oklch(0.80 0.15 80 / 0.60);  --flow2: oklch(0.86 0.13 100 / 0.46); }
+  .card[data-prio="baja"]  { --flow: oklch(0.64 0.16 153 / 0.58); --flow2: oklch(0.74 0.13 182 / 0.46); }
   .card-row, .card-title, .card-desc, .deadline, .card-next, .card-foot { position: relative; z-index: 1; }
 
   /* Reading progress: filete lima fino arriba del todo (idea ⭐). */
@@ -518,7 +519,7 @@ function cardHTML(p) {
   const eff = effPriority(p), di = deadlineInfo(p.deadline);
   const tags = (p.tags||[]).slice(0,4).map(t => `<span class="tag">${esc(t)}</span>`).join('');
   const link = p.link ? `<a class="card-link" href="${esc(p.link)}" target="_blank" rel="noopener noreferrer">Abrir <i class="ph ${ICON.link}"></i></a>` : '';
-  return `<article class="card" data-id="${p.id}" data-prio="${esc(eff)}" style="view-transition-name:card-${p.id}" role="button" tabindex="0" aria-label="Abrir ${esc(p.name)}">
+  return `<article class="card" data-id="${p.id}" data-prio="${esc(eff)}" role="button" tabindex="0" aria-label="Abrir ${esc(p.name)}">
     <span class="card-flow" aria-hidden="true"><i></i><i></i></span>
     <i class="ph ${ICON.go} go" aria-hidden="true"></i>
     <div class="card-row">
@@ -568,8 +569,18 @@ function renderCards(mode) {
 function render(mode) { const c = computeCounts(); updateFilters(c); updateStats(c); renderCards(mode); prevCounts = c; }
 async function setFilter(f) {
   if (f === currentFilter) return;
-  // Con View Transitions: las tarjetas que permanecen se desplazan (morph nativo por nombre), las que entran/salen funden.
-  if (supportsVT) { currentFilter = f; document.startViewTransition(() => render('none')); return; }
+  // Con View Transitions: nombres temporales (no permanentes) para que las tarjetas que permanecen se desplacen
+  // y las que entran/salen fundan, SIN que esos nombres estorben luego al morph tarjeta->modal.
+  if (supportsVT) {
+    document.querySelectorAll('#projects .card').forEach(el => el.style.viewTransitionName = 'card-' + el.dataset.id);
+    currentFilter = f;
+    const vt = document.startViewTransition(() => {
+      render('none');
+      document.querySelectorAll('#projects .card').forEach(el => el.style.viewTransitionName = 'card-' + el.dataset.id);
+    });
+    vt.finished.finally(() => document.querySelectorAll('#projects .card').forEach(el => el.style.viewTransitionName = ''));
+    return;
+  }
   if (motionOn && !reduce) {
     const q = searchQuery;
     const stays = new Set(projects.filter(p => (f === 'todos' || p.status === f) && (!q || p.name.toLowerCase().includes(q) || (p.desc||'').toLowerCase().includes(q) || (p.tags||[]).some(t => t.toLowerCase().includes(q)))).map(p => String(p.id)));
@@ -595,11 +606,12 @@ function closeModal() { dlg.close(); }
 // Tocar una tarjeta -> morph al modal (View Transitions). Sin soporte: abre normal.
 function openCardFromEl(card, id) {
   if (!supportsVT || !card) { openModal(id); return; }
-  const prev = card.style.viewTransitionName;
+  // Defensa: ninguna otra tarjeta debe tener nombre de transicion, o el modal pintaria detras de ellas.
+  document.querySelectorAll('#projects .card').forEach(el => { if (el !== card) el.style.viewTransitionName = ''; });
   card.style.viewTransitionName = 'cardmodal';
   dlg.classList.add('vt');
   const vt = document.startViewTransition(() => {
-    card.style.viewTransitionName = prev || '';
+    card.style.viewTransitionName = '';
     openModal(id);
     dlg.style.viewTransitionName = 'cardmodal';
   });
