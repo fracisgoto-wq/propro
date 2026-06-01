@@ -129,7 +129,7 @@
   .stat .l { margin-top: 9px; font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.16em; color: var(--muted); }
 
   /* ===================== CONTROLS ===================== */
-  .controls { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding: 22px 0 26px; border-top: 1px solid var(--line); position: sticky; top: 71px; z-index: 20; background: var(--bg); }
+  .controls { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 14px clamp(14px, 3vw, 20px); margin: 8px 0 16px; border-radius: 16px; position: sticky; top: 70px; z-index: 20; background: oklch(0.95 0.006 95 / 0.72); -webkit-backdrop-filter: blur(14px) saturate(140%); backdrop-filter: blur(14px) saturate(140%); border: 1px solid oklch(1 0 0 / 0.5); }
   .filters { display: flex; gap: 7px; overflow-x: auto; scrollbar-width: none; flex: 1; min-width: 0; }
   .filters::-webkit-scrollbar { display: none; }
   .filter {
@@ -226,7 +226,8 @@
   @starting-style { dialog#modal[open] { opacity: 0; transform: translateY(10px) scale(0.96); } }
   @media (max-width: 600px) { @starting-style { dialog#modal[open] { transform: translateY(100%); } } }
   @starting-style { dialog#modal[open]::backdrop { opacity: 0; } }
-  .modal-card { display: flex; flex-direction: column; max-height: 90dvh; }
+  .modal-card { display: flex; flex-direction: column; max-height: 90dvh; position: relative; touch-action: pan-y; }
+  .modal-card .del-overlay { border-radius: 14px; }
   .modal-head { padding: 28px 28px 6px; }
   @media (max-width: 600px) { .modal-head::before { content: ''; display: block; width: 38px; height: 4px; background: var(--line-2); border-radius: 2px; margin: 0 auto 18px; } }
   .modal-head h2 { font-family: var(--font-display); font-weight: 700; font-size: 26px; letter-spacing: -0.01em; }
@@ -246,8 +247,13 @@
   select { appearance: none; -webkit-appearance: none; cursor: pointer; padding-right: 38px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 256 256' fill='%23555'%3E%3Cpath d='M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 13px center; }
   .err { font-size: 12.5px; color: var(--danger); display: none; }
   .err.show { display: block; }
-  .modal-foot { display: flex; justify-content: flex-end; gap: 10px; padding: 18px 28px 26px; margin-top: 6px; border-top: 1px solid var(--line); }
-  @media (max-width: 600px) { .modal-foot { padding-bottom: calc(26px + env(safe-area-inset-bottom)); } .modal-foot .btn { flex: 1; justify-content: center; } }
+  .modal-foot { display: flex; align-items: center; justify-content: flex-end; gap: 10px; padding: 18px 28px 26px; margin-top: 6px; border-top: 1px solid var(--line); }
+  .modal-foot #deleteBtn { margin-right: auto; }
+  @media (max-width: 600px) {
+    .modal-foot { flex-wrap: wrap; padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
+    .modal-foot #cancelBtn, .modal-foot #saveBtn { flex: 1; justify-content: center; }
+    .modal-foot #deleteBtn { order: 3; flex-basis: 100%; margin: 8px 0 0; justify-content: center; }
+  }
 
   /* ---- Mobile gestures + delete-loading ---- */
   .card { touch-action: pan-y; }
@@ -257,8 +263,8 @@
     font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.18em; color: var(--danger);
     opacity: 0; transition: opacity .2s ease; }
   .del-overlay .bar { position: absolute; left: 0; bottom: 0; height: 3px; width: 100%; background: var(--danger); transform: scaleX(0); transform-origin: left; }
-  .card.deleting .del-overlay { opacity: 1; }
-  .card.deleting .del-overlay .bar { animation: delFill .85s linear forwards; }
+  .deleting .del-overlay { opacity: 1; }
+  .deleting .del-overlay .bar { animation: delFill .85s linear forwards; }
   @keyframes delFill { to { transform: scaleX(1); } }
   dialog#modal.dragging { transition: none !important; }
 
@@ -346,7 +352,7 @@
       </div>
     </div>
     <div class="modal-foot">
-      <button type="button" class="btn btn-del" id="deleteBtn" style="display:none; margin-right:auto"><i class="ph ph-trash"></i> Eliminar</button>
+      <button type="button" class="btn btn-del" id="deleteBtn" style="display:none"><i class="ph ph-trash"></i> Eliminar</button>
       <button type="button" class="btn btn-ghost" id="cancelBtn">Cancelar</button>
       <button type="submit" class="btn btn-primary" id="saveBtn">Guardar proyecto <i class="ph ph-arrow-right"></i></button>
     </div>
@@ -526,6 +532,20 @@ async function startDelete(id) {
   }
   projects = projects.filter(p => p.id !== id); save(); render('animate');
 }
+// Swipe-right dentro del modal → confirmación → animación "Borrando…" → eliminar
+async function confirmDeleteFromModal() {
+  const id = editingId; if (id == null) return;
+  if (!confirm('¿Eliminar este proyecto? Esta acción no se puede deshacer.')) return;
+  const cardEl = dlg.querySelector('.modal-card');
+  if (cardEl && motionOn && !reduce) {
+    const ov = document.createElement('div'); ov.className = 'del-overlay'; ov.innerHTML = '<span>Borrando…</span><span class="bar"></span>';
+    cardEl.appendChild(ov);
+    requestAnimationFrame(() => cardEl.classList.add('deleting'));
+    await new Promise(r => setTimeout(r, 950));
+  }
+  closeModal();
+  projects = projects.filter(p => p.id !== id); save(); render('animate');
+}
 function clearFilters() { currentFilter = 'todos'; searchQuery = ''; $('search').value = ''; render('animate'); }
 
 /* ===== Gestos móviles (solo táctil) ===== */
@@ -574,6 +594,35 @@ if (isTouch) {
   }
 }
 
+// Swipe a la derecha sobre el modal (fuera de los campos) → borrar
+if (isTouch) {
+  const mc = dlg.querySelector('.modal-card');
+  if (mc) {
+    let sx = 0, sy = 0, on = false, decided = false, go = false;
+    mc.addEventListener('pointerdown', e => {
+      if (e.pointerType === 'mouse' || e.target.closest('input, textarea, select, button')) return;
+      sx = e.clientX; sy = e.clientY; on = true; decided = false; go = false;
+    });
+    mc.addEventListener('pointermove', e => {
+      if (!on) return;
+      const dx = e.clientX - sx, dy = e.clientY - sy;
+      if (!decided && (Math.abs(dx) > 10 || Math.abs(dy) > 10)) { decided = true; go = dx > 0 && Math.abs(dx) > Math.abs(dy) * 1.3; }
+      if (decided && go) { e.preventDefault(); mc.style.transform = 'translateX(' + Math.min(dx, 90) + 'px)'; mc.style.opacity = String(Math.max(0.55, 1 - dx / 600)); }
+    });
+    const endSwipe = e => {
+      if (!on) return; on = false;
+      if (!decided || !go) return;
+      const dx = e.clientX - sx;
+      mc.style.transition = 'transform .25s var(--ease), opacity .25s var(--ease)';
+      mc.style.transform = ''; mc.style.opacity = '';
+      setTimeout(() => { mc.style.transition = ''; }, 260);
+      if (dx > (mc.offsetWidth || 360) * 0.35) confirmDeleteFromModal();
+    };
+    mc.addEventListener('pointerup', endSwipe);
+    mc.addEventListener('pointercancel', endSwipe);
+  }
+}
+
 document.body.addEventListener('click', e => {
   const t = e.target.closest('[data-action]');
   if (t) { const a = t.dataset.action; if (a === 'new') openModal(); else if (a === 'clear') clearFilters(); return; }
@@ -603,7 +652,16 @@ if (motionOn) {
     // Subtle editorial scroll-fade — the hero recedes as you scroll into the work (Wolverine-style)
     if (scrollFn) {
       const heroEl = document.querySelector('.hero');
-      scrollFn((p) => { heroEl.style.opacity = String(1 - p * 0.6); heroEl.style.transform = `translateY(${-p * 36}px)`; }, { target: heroEl, offset: ['start start', 'end start'] });
+      const k = document.querySelector('.kicker'), h = document.querySelector('.hero h1'), s = document.querySelector('.hero-sub'), st = document.querySelector('.hero-stats');
+      // Layered parallax: foreground (headline) recedes more + scales; others trail -> depth. Cards untouched.
+      setTimeout(() => {
+        scrollFn((p) => {
+          if (k)  { k.style.transform  = 'translateY(' + (-p * 30) + 'px)';  k.style.opacity  = String(Math.max(0, 1 - p * 1.4)); }
+          if (h)  { h.style.transform  = 'translateY(' + (-p * 90) + 'px) scale(' + (1 - p * 0.05) + ')'; h.style.opacity = String(Math.max(0, 1 - p * 0.75)); }
+          if (s)  { s.style.transform  = 'translateY(' + (-p * 58) + 'px)';  s.style.opacity  = String(Math.max(0, 1 - p * 1.0)); }
+          if (st) { st.style.transform = 'translateY(' + (-p * 26) + 'px)'; st.style.opacity = String(Math.max(0, 1 - p * 0.9)); }
+        }, { target: heroEl, offset: ['start start', 'end start'] });
+      }, 1600);
     }
   } catch (e) {}
 }
