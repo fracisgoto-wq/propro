@@ -323,6 +323,11 @@
 
   @media (prefers-reduced-motion: reduce) { .card-flow i { animation: none; } }
 
+  /* View Transitions: morph tarjeta -> modal y transicion al filtrar (iOS 18+/Chrome). Sin soporte cae al motion actual. */
+  ::view-transition-group(cardmodal) { animation-duration: .44s; animation-timing-function: var(--ease); }
+  ::view-transition-old(cardmodal) { animation-duration: .26s; }
+  dialog#modal.vt, dialog#modal.vt::backdrop { transition: none !important; }
+
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
 </style>
 </head>
@@ -439,6 +444,7 @@ let animate = null, stagger = null, inView = null, scrollFn = null;
 try { const M = await import('https://cdn.jsdelivr.net/npm/motion@12/+esm'); animate = M.animate; stagger = M.stagger; inView = M.inView; scrollFn = M.scroll; }
 catch (e) { console.warn('Motion no disponible:', e?.message); }
 const motionOn = !!animate && !reduce;
+const supportsVT = typeof document.startViewTransition === 'function' && !reduce;
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
@@ -512,7 +518,7 @@ function cardHTML(p) {
   const eff = effPriority(p), di = deadlineInfo(p.deadline);
   const tags = (p.tags||[]).slice(0,4).map(t => `<span class="tag">${esc(t)}</span>`).join('');
   const link = p.link ? `<a class="card-link" href="${esc(p.link)}" target="_blank" rel="noopener noreferrer">Abrir <i class="ph ${ICON.link}"></i></a>` : '';
-  return `<article class="card" data-id="${p.id}" data-prio="${esc(eff)}" role="button" tabindex="0" aria-label="Abrir ${esc(p.name)}">
+  return `<article class="card" data-id="${p.id}" data-prio="${esc(eff)}" style="view-transition-name:card-${p.id}" role="button" tabindex="0" aria-label="Abrir ${esc(p.name)}">
     <span class="card-flow" aria-hidden="true"><i></i><i></i></span>
     <i class="ph ${ICON.go} go" aria-hidden="true"></i>
     <div class="card-row">
@@ -562,6 +568,8 @@ function renderCards(mode) {
 function render(mode) { const c = computeCounts(); updateFilters(c); updateStats(c); renderCards(mode); prevCounts = c; }
 async function setFilter(f) {
   if (f === currentFilter) return;
+  // Con View Transitions: las tarjetas que permanecen se desplazan (morph nativo por nombre), las que entran/salen funden.
+  if (supportsVT) { currentFilter = f; document.startViewTransition(() => render('none')); return; }
   if (motionOn && !reduce) {
     const q = searchQuery;
     const stays = new Set(projects.filter(p => (f === 'todos' || p.status === f) && (!q || p.name.toLowerCase().includes(q) || (p.desc||'').toLowerCase().includes(q) || (p.tags||[]).some(t => t.toLowerCase().includes(q)))).map(p => String(p.id)));
@@ -584,6 +592,19 @@ function openModal(id = null) {
   dlg.showModal(); requestAnimationFrame(() => $('f-name').focus());
 }
 function closeModal() { dlg.close(); }
+// Tocar una tarjeta -> morph al modal (View Transitions). Sin soporte: abre normal.
+function openCardFromEl(card, id) {
+  if (!supportsVT || !card) { openModal(id); return; }
+  const prev = card.style.viewTransitionName;
+  card.style.viewTransitionName = 'cardmodal';
+  dlg.classList.add('vt');
+  const vt = document.startViewTransition(() => {
+    card.style.viewTransitionName = prev || '';
+    openModal(id);
+    dlg.style.viewTransitionName = 'cardmodal';
+  });
+  vt.finished.finally(() => { dlg.style.viewTransitionName = ''; dlg.classList.remove('vt'); });
+}
 dlg.addEventListener('close', () => editingId = null);
 dlg.addEventListener('click', e => { if (e.target === dlg) closeModal(); });
 function saveProject() {
@@ -708,11 +729,11 @@ if (isTouch) {
 document.body.addEventListener('click', e => {
   const t = e.target.closest('[data-action]');
   if (t) { const a = t.dataset.action; if (a === 'new') openModal(); else if (a === 'clear') clearFilters(); return; }
-  const card = e.target.closest('#projects .card');           // tap a card to open it
-  if (card && !e.target.closest('a')) openModal(+card.dataset.id);
+  const card = e.target.closest('#projects .card');           // tap a card -> morph al modal
+  if (card && !e.target.closest('a')) openCardFromEl(card, +card.dataset.id);
 });
 $('deleteBtn').addEventListener('click', promptDelete);
-$('projects').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { const c = e.target.closest('.card'); if (c) { e.preventDefault(); openModal(+c.dataset.id); } } });
+$('projects').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { const c = e.target.closest('.card'); if (c) { e.preventDefault(); openCardFromEl(c, +c.dataset.id); } } });
 $('cancelBtn').addEventListener('click', closeModal);
 $('projForm').addEventListener('submit', e => { e.preventDefault(); saveProject(); });
 $('f-name').addEventListener('input', () => { $('f-name').classList.remove('invalid','shake'); $('nameErr').classList.remove('show'); });
